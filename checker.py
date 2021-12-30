@@ -53,8 +53,12 @@ print('Total Cards = ',number_of_rows)
 
 input_workbook_mobile_number = input_workbook['Mobile Number'].values.tolist()
 
+# Opening JSON file & returns JSON object as a dictionary
+json_file = open('settings.json')
+settings_data = json.load(json_file)
+
 def start_link():
-    driver.get("https://gp-giftcard.novopay.in/GeoPay/Login")
+    driver.get(settings_data['link'])
 
 def demo():
   global balance, cardno, expiry, cvv, kitno
@@ -81,7 +85,7 @@ def main_script():
     driver.find_element_by_xpath("//button[@type='submit']").click()
     driver.find_element_by_id("mpin").click()
     driver.find_element_by_id("mpin").clear()
-    driver.find_element_by_id("mpin").send_keys("2021")
+    driver.find_element_by_id("mpin").send_keys(settings_data['mpin'])
     driver.find_element_by_xpath("//form[@id='MPIN_form']/div[2]/button").click()
     time.sleep(0.5)
     cards_list = []
@@ -102,7 +106,7 @@ def main_script2():
     driver.find_element_by_xpath("//button[@type='submit']").click()
     driver.find_element_by_id("mpin").click()
     driver.find_element_by_id("mpin").clear()
-    driver.find_element_by_id("mpin").send_keys("2021")
+    driver.find_element_by_id("mpin").send_keys(settings_data['mpin'])
     driver.find_element_by_xpath("//form[@id='MPIN_form']/div[2]/button").click()
     time.sleep(0.5)
     cards_list = []
