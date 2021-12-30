@@ -51,7 +51,7 @@ input_workbook.head()
 number_of_rows = len(input_workbook.index)
 print('Total Cards = ',number_of_rows)
 
-input_workbook_mobile_number = input_workbook['MOBILE NUMBER'].values.tolist()
+input_workbook_mobile_number = input_workbook['Mobile Number'].values.tolist()
 
 def start_link():
     driver.get("https://gp-giftcard.novopay.in/GeoPay/Login")
@@ -90,65 +90,37 @@ def main_script():
     for li in all_li:
       cards = li.get_attribute("id")
       cards_list.append(cards)
-    print(len(cards_list))
     for n in range(0, len(cards_list)):
       demo()
-
-    
-    #c = driver.find_elements_by_tag_name("li")
-    #print (c)
-    #print(len(c))
-    
-    #b = driver.find_element_by_xpath("//li[@class='item gcl ACTIVE_f ']")
-    #print(b.text)
-    #a = driver.find_element_by_xpath("//li[@class='item gcl ACTIVE_f ']")
-    #print (a)
-    #for li in a:
-      #print(a.get_attribute("id"))
-    #print(a.get_attribute("id"))
-    #cc_last_number()
-    #driver.find_element_by_id(list_xxxx).click()
     time.sleep(3)
-    #balance = driver.find_element_by_id('balance').text
 
-    #driver.find_element_by_id('list_'+str(cc_last_number_12[x])).click()
-    #time.sleep(2)
-    '''
-    #time.sleep(1)
-    try:
-        driver.find_element_by_xpath("//div[@id='toast-container']/div/div")
-    except NoSuchElementException:
-        driver.find_element_by_id("mpin").click()
-        driver.find_element_by_id("mpin").clear()
-        driver.find_element_by_id("mpin").send_keys("2244")
-        driver.find_element_by_xpath("//form[@id='MPIN_form']/div[2]/button").click()
-        time.sleep(200)
-    else :
-        driver.quit()
-        
-        driver.get("https://sr-giftcard.novopay.in/SR-Busines/Login")
-        driver.find_element_by_id("mobile_number").click()
-        driver.find_element_by_id("mobile_number").clear()
-        driver.find_element_by_id("mobile_number").send_keys(input_workbook_mobile_number[x])
-        driver.find_element_by_xpath("//button[@type='submit']").click()
-        time.sleep(6)
-    '''
-    #print(driver.find_element_by_xpath("//span[text()='xxxx xxxx xxxx 2224']"))
-    #//span[text()='thisisatest']
-    #driver.find_element_by_xpath("//div[@id='View-Card']/span").text
-    #driver.find_element_by_xpath("/html/body/div[1]/div[1]/div/section/div/div/div/div[2]/ul/li[1]/div[2]/span").text
-    #//*[@id="View-Card"]/span
-    #driver.find_elements_by_xpath("//span[@class='product-description card_number']")
-    #print(driver.find_element_by_xpath("//span[@class='product-description card_number']"))
-    #time.sleep(2)
-    #driver.find_element_by_id("balance").click()
+def main_script2():
+    global balance, input_card_number, cardno, expiry, cvv, kitno, cards, n, cards_list
+    driver.find_element_by_id("mobile_number").click()
+    driver.find_element_by_id("mobile_number").clear()
+    driver.find_element_by_id("mobile_number").send_keys(input_workbook_mobile_number[x])
+    driver.find_element_by_xpath("//button[@type='submit']").click()
+    driver.find_element_by_id("mpin").click()
+    driver.find_element_by_id("mpin").clear()
+    driver.find_element_by_id("mpin").send_keys("2021")
+    driver.find_element_by_xpath("//form[@id='MPIN_form']/div[2]/button").click()
+    time.sleep(0.5)
+    cards_list = []
+    elem = driver.find_element_by_xpath('//*[@id="gc_list"]')
+    all_li = elem.find_elements_by_tag_name("li")
+    for li in all_li:
+      cards = li.get_attribute("id")
+      cards_list.append(cards)
+    for n in range(done_transactions_wb_1[h], len(cards_list)):
+      demo()
+    time.sleep(3)
 
 # get-output sheet to append output
 output_sheet = path.exists("Output.xlsx")
 if output_sheet == True :
   output_sheet_file_path = "Output.xlsx"
 else :
-  output_headers= ['Mobile Number', 'Card Number', 'Expiry', 'CVV', 'Kit Number', 'Current Balance']
+  output_headers= ['Mobile Number', 'Card Number', 'Expiry', 'CVV', 'Kit Number', 'Current Balance', 'No.of Cards']
   overall_output = Workbook()
   page = overall_output.active
   page.append(output_headers)
@@ -156,7 +128,7 @@ else :
   output_sheet_file_path = "Output.xlsx"
 
 def output_save():
-  entry_list = [[ input_workbook_mobile_number[x], cardno, expiry, cvv, kitno, balance]]
+  entry_list = [[ input_workbook_mobile_number[x], cardno, expiry, cvv, kitno, balance, n+1]]
   output_wb = load_workbook(output_sheet_file_path)
   page = output_wb.active
   for info in entry_list:
@@ -164,12 +136,17 @@ def output_save():
   output_wb.save(filename='Output.xlsx')
 
 def resume_output():
-  global output_cc_number
+  global output_mobile_number, done_transactions_wb_1
   global h
-  output_load_wb_2 = pd.read_excel(output_sheet_file_path, sheet_name = 'Sheet', usecols = 'A', dtype=int)
+  output_load_wb_2 = pd.read_excel(output_sheet_file_path, sheet_name = 'Sheet', usecols = 'A', dtype=str)
   output_load_wb_2.head()
-  output_cc_number = output_load_wb_2['Mobile Number'].values.tolist()
-  h = len(output_load_wb_2.index)
+  output_mobile_number = output_load_wb_2['Mobile Number'].values.tolist()
+  output_load_wb_1 = pd.read_excel(output_sheet_file_path, sheet_name = 'Sheet', usecols = 'G', dtype=int)
+  output_load_wb_1.head()
+  done_transactions_wb_1 = output_load_wb_1['No.of Cards'].values.tolist()
+  h = len(output_load_wb_1.index) - 1
+  print (output_mobile_number[h],done_transactions_wb_1[h])
+
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--incognito")
@@ -189,10 +166,11 @@ except IndexError:
         main_script()
         driver.quit()
 else:
-    last_txncard = h
+    last_txncard =  input_workbook[input_workbook['Mobile Number'] == output_mobile_number[h]].index[0]
     for x in range (last_txncard , number_of_rows):
         driver=webdriver.Chrome(chrome_options=chrome_options, desired_capabilities=caps, executable_path="chromedriver.exe")
         driver.maximize_window()
         start_link()
-        main_script()
+        main_script2()
+        done_transactions_wb_1[h] = 0
         driver.quit()
