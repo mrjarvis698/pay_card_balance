@@ -44,48 +44,72 @@ else :
     outfile.write(json_object)
 
 # read imported xlsx file path using pandas
-input_workbook = pd.read_excel(xlsx_file_path, sheet_name = 'Sheet1', usecols = 'A:F', dtype=str)
+input_workbook = pd.read_excel(xlsx_file_path, sheet_name = 'Sheet1', usecols = 'A', dtype=str)
 input_workbook.head()
 
 # read total number of rows present in xlsx
 number_of_rows = len(input_workbook.index)
 print('Total Cards = ',number_of_rows)
 
-input_workbook_cc_number = input_workbook['Cards'].values.tolist()
-input_workbook_cvv_number = input_workbook['CVV'].values.tolist()
-input_workbook_expiry_number = input_workbook['Exp date'].values.tolist()
-input_workbook_kit_number = input_workbook['KIT NUMBER'].values.tolist()
-input_workbook_mobile_number = input_workbook['Mobile Number'].values.tolist()
-input_workbook_balance_number = input_workbook['Balance'].values.tolist()
-
-def cc_last_number():
-    global cc_last_number_12, cc_last_number_13, cc_last_number_14, cc_last_number_15, list_xxxx
-    workbook_cc_number = input_workbook_cc_number[x]
-    cc_last_number_12 = workbook_cc_number[12]
-    cc_last_number_13 = workbook_cc_number[13]
-    cc_last_number_14 = workbook_cc_number[14]
-    cc_last_number_15 = workbook_cc_number[15]
-    list_xxxx = 'list_' + str(cc_last_number_12) + str(cc_last_number_13) + str(cc_last_number_14) + str(cc_last_number_15)
-    #print(input_workbook_cc_number[x], list_xxxx)
+input_workbook_mobile_number = input_workbook['MOBILE NUMBER'].values.tolist()
 
 def start_link():
-    driver.get("https://sr-giftcard.novopay.in/SR-Busines/Login")
+    driver.get("https://gp-giftcard.novopay.in/GeoPay/Login")
+
+def demo():
+  global balance, cardno, expiry, cvv, kitno
+  driver.find_element_by_id(cards_list[n]).click()
+  time.sleep(3)
+  driver.find_element_by_xpath('//*[@id="View-Details"]').click()
+  driver.find_element_by_xpath('//*[@id="auth_value"]').send_keys("2021")
+  driver.find_element_by_xpath('//*[@id="im_footer"]/div/button').click()
+  time.sleep(1)
+  cardno = driver.find_element_by_id('card_number_fill').text
+  expiry = driver.find_element_by_id('valid_thru_fill').text
+  cvv = driver.find_element_by_id('cvv_fill').text
+  kitno = driver.find_element_by_id('kit_number_fill').text
+  balance = driver.find_element_by_id('balance').text
+  print(cardno, expiry, cvv, kitno, balance)
+  output_save()
+  driver.find_element_by_xpath('//*[@id="doc_body"]/div[1]/header/nav/div/i').click()
 
 def main_script():
-    global balance
+    global balance, input_card_number, cardno, expiry, cvv, kitno, cards, n, cards_list
     driver.find_element_by_id("mobile_number").click()
     driver.find_element_by_id("mobile_number").clear()
     driver.find_element_by_id("mobile_number").send_keys(input_workbook_mobile_number[x])
     driver.find_element_by_xpath("//button[@type='submit']").click()
     driver.find_element_by_id("mpin").click()
     driver.find_element_by_id("mpin").clear()
-    driver.find_element_by_id("mpin").send_keys("2244")
+    driver.find_element_by_id("mpin").send_keys("2021")
     driver.find_element_by_xpath("//form[@id='MPIN_form']/div[2]/button").click()
     time.sleep(0.5)
-    cc_last_number()
-    driver.find_element_by_id(list_xxxx).click()
-    time.sleep(2)
-    balance = driver.find_element_by_id('balance').text
+    cards_list = []
+    elem = driver.find_element_by_xpath('//*[@id="gc_list"]')
+    all_li = elem.find_elements_by_tag_name("li")
+    for li in all_li:
+      cards = li.get_attribute("id")
+      cards_list.append(cards)
+    print(len(cards_list))
+    for n in range(0, len(cards_list)):
+      demo()
+
+    
+    #c = driver.find_elements_by_tag_name("li")
+    #print (c)
+    #print(len(c))
+    
+    #b = driver.find_element_by_xpath("//li[@class='item gcl ACTIVE_f ']")
+    #print(b.text)
+    #a = driver.find_element_by_xpath("//li[@class='item gcl ACTIVE_f ']")
+    #print (a)
+    #for li in a:
+      #print(a.get_attribute("id"))
+    #print(a.get_attribute("id"))
+    #cc_last_number()
+    #driver.find_element_by_id(list_xxxx).click()
+    time.sleep(3)
+    #balance = driver.find_element_by_id('balance').text
 
     #driver.find_element_by_id('list_'+str(cc_last_number_12[x])).click()
     #time.sleep(2)
@@ -124,7 +148,7 @@ output_sheet = path.exists("Output.xlsx")
 if output_sheet == True :
   output_sheet_file_path = "Output.xlsx"
 else :
-  output_headers= ["Cards", 'CVV', 'Exp date', 'KIT NUMBER','Mobile Number', 'Balance', 'Current Balance']
+  output_headers= ['Mobile Number', 'Card Number', 'Expiry', 'CVV', 'Kit Number', 'Current Balance']
   overall_output = Workbook()
   page = overall_output.active
   page.append(output_headers)
@@ -132,7 +156,7 @@ else :
   output_sheet_file_path = "Output.xlsx"
 
 def output_save():
-  entry_list = [[ input_workbook_cc_number[x], input_workbook_cvv_number[x], input_workbook_expiry_number[x], input_workbook_kit_number[x], input_workbook_mobile_number[x], input_workbook_balance_number[x], balance]]
+  entry_list = [[ input_workbook_mobile_number[x], cardno, expiry, cvv, kitno, balance]]
   output_wb = load_workbook(output_sheet_file_path)
   page = output_wb.active
   for info in entry_list:
@@ -144,7 +168,7 @@ def resume_output():
   global h
   output_load_wb_2 = pd.read_excel(output_sheet_file_path, sheet_name = 'Sheet', usecols = 'A', dtype=int)
   output_load_wb_2.head()
-  output_cc_number = output_load_wb_2['Cards'].values.tolist()
+  output_cc_number = output_load_wb_2['Mobile Number'].values.tolist()
   h = len(output_load_wb_2.index)
 
 chrome_options = webdriver.ChromeOptions()
@@ -163,7 +187,6 @@ except IndexError:
         driver.maximize_window()
         start_link()
         main_script()
-        output_save()
         driver.quit()
 else:
     last_txncard = h
@@ -172,5 +195,4 @@ else:
         driver.maximize_window()
         start_link()
         main_script()
-        output_save()
         driver.quit()
